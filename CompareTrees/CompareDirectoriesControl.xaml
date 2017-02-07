@@ -48,10 +48,10 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Button x:Name="CollapseAll" Content="Collapse all" Grid.Column="0" Margin="0,0,10,0" Click="CollapseAll_Click"/>
-                <ComboBox x:Name="HideFiles" SelectedIndex="2" Width="250" Grid.Column="2" Margin="0,0,10,0">
+                <ComboBox x:Name="HideFiles" SelectedIndex="1" Width="300" Grid.Column="2" Margin="0,0,10,0">
                     <ComboBoxItem>Show all files</ComboBoxItem>
-                    <ComboBoxItem>Hide identical files</ComboBoxItem>
-                    <ComboBoxItem>Hide files that only differ in whitespace</ComboBoxItem>
+                    <ComboBoxItem>Show files with any differences</ComboBoxItem>
+                    <ComboBoxItem>Show files differences outside of white space</ComboBoxItem>
                 </ComboBox>
             </Grid>
         </StackPanel>
