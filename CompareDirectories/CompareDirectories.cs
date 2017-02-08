@@ -1,10 +1,10 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="CompareDirectories.cs" company="Microsoft Corp.">
-//     Copyright (c) Microsoft Corp..  All rights reserved.
+// <copyright file="CompareDirectories.cs" company="Company">
+//     Copyright (c) Company.  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
 
-namespace CompareTrees
+namespace CompareDirectories
 {
     using System;
     using System.Runtime.InteropServices;
@@ -21,13 +21,13 @@ namespace CompareTrees
     /// implementation of the IVsUIElementPane interface.
     /// </para>
     /// </remarks>
-    [Guid("dddd4ab2-2a17-42fd-bb5b-7230d687b23a")]
-    public class CompareDirectories : ToolWindowPane
+    [Guid("66c13abe-2dcd-4963-9070-94b0b0f89884")]
+    public class CompareDirectoriesToolWindow : ToolWindowPane
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CompareDirectories"/> class.
         /// </summary>
-        public CompareDirectories() : base(null)
+        public CompareDirectoriesToolWindow() : base(null)
         {
             this.Caption = "CompareDirectories";
 

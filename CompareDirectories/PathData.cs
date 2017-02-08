@@ -4,7 +4,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-namespace CompareTrees
+namespace CompareDirectories
 {
     struct PathData
     {

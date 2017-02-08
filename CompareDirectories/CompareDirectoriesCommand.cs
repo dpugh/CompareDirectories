@@ -1,16 +1,15 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="CompareDirectoriesCommand.cs" company="Microsoft Corp.">
-//     Copyright (c) Microsoft Corp..  All rights reserved.
+// <copyright file="CompareDirectoriesCommand.cs" company="Company">
+//     Copyright (c) Company.  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
 
-using System;
-using System.ComponentModel.Design;
-using System.Globalization;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using System;
+using System.ComponentModel.Design;
 
-namespace CompareTrees
+namespace CompareDirectories
 {
     /// <summary>
     /// Command handler
@@ -94,7 +93,7 @@ namespace CompareTrees
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = this.package.FindToolWindow(typeof(CompareDirectories), 0, true);
+            ToolWindowPane window = this.package.FindToolWindow(typeof(CompareDirectoriesToolWindow), 0, true);
             if ((null == window) || (null == window.Frame))
             {
                 throw new NotSupportedException("Cannot create tool window");

@@ -3,7 +3,7 @@
     <Metadata>
         <Identity Id="CompareDirectories.dpugh.12464e2d-a31b-4538-87ae-e73ef37d6fb5" Version="1.1" Language="en-US" Publisher="dpugh" />
         <DisplayName>CompareDirectories</DisplayName>
-        <Description xml:space="preserve">Tool window for compariing directories.</Description>
+        <Description xml:space="preserve">Tool for compariing directories.</Description>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0]" />
