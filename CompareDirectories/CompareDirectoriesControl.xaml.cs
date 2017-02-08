@@ -4,7 +4,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-namespace CompareTrees
+namespace CompareDirectories
 {
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.Shell;
@@ -12,7 +12,6 @@ namespace CompareTrees
     using Microsoft.VisualStudio.Threading;
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Threading;
@@ -285,9 +284,9 @@ namespace CompareTrees
                             ++leftIndex;
                             ++rightIndex;
                         }
-                        else if (ContainsAfterIndex(leftFile.RelativePath, rightFiles, rightIndex + 1))
+                        else if ((leftIndex >= leftFiles.Count) || ContainsAfterIndex(leftFile.RelativePath, rightFiles, rightIndex + 1))
                         {
-                            root.AddToTree(null, rightFiles[rightIndex].FullPath, rightFile.RelativePath + " (right only)", 
+                            root.AddToTree(null, rightFiles[rightIndex].FullPath, rightFile.RelativePath + " (right only)",
                                            FileDifference.DifferentExcludingWhiteSpace, splitlabel: true);
                             ++rightIndex;
                         }

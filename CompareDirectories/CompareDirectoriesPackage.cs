@@ -21,7 +21,7 @@ using Microsoft.VisualStudio.Shell.Settings;
 using IServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
 using System.Collections.ObjectModel;
 
-namespace CompareTrees
+namespace CompareDirectories
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
@@ -43,7 +43,7 @@ namespace CompareTrees
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [ProvideToolWindow(typeof(CompareDirectories))]
+    [ProvideToolWindow(typeof(CompareDirectoriesToolWindow))]
     [Guid(CompareDirectoriesPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class CompareDirectoriesPackage : Package
