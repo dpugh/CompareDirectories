@@ -1,6 +1,6 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="CompareDirectories.cs" company="Company">
-//     Copyright (c) Company.  All rights reserved.
+// <copyright file="CompareDirectoriesToolWindow.cs" company="Microsoft Corp.">
+//     Copyright (c) Microsoft Corp..  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
 

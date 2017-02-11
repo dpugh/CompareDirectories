@@ -9,52 +9,39 @@
              d:DesignHeight="300" d:DesignWidth="400"
              Name="MyToolWindow">
     <Grid>
-        <StackPanel Orientation="Vertical">
-            <Grid Margin="10,5,0,0" >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="5"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Text="Left:" Grid.Column="0" Grid.Row="0"  Margin="0,3,0,0" />
-                <TextBox x:Name="Left" Grid.Column="1" Grid.Row="0" Height="23" TextWrapping="Wrap" VerticalContentAlignment="Center" Margin="5,0,10,0"/>
-                <Button x:Name="LeftBrowse" Content="..." Grid.Column="2" Grid.Row="0" Margin="0,0,10,0" Click="LeftBrowse_Click"/>
+        <TreeView x:Name="Differences" HorizontalAlignment="Stretch" Margin="10,100,10,10" VerticalAlignment="Stretch" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.CleanUpVirtualizedItem="Differences_CleanUpVirtualizedItem">
+            <TreeView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel />
+                </ItemsPanelTemplate>
+            </TreeView.ItemsPanel>
+        </TreeView>
 
-                <TextBlock Text="Right:" Grid.Column="0" Grid.Row="2" Margin="0,3,0,0" />
-                <TextBox x:Name="Right" Grid.Column="1" Grid.Row="2" Height="23" TextWrapping="Wrap" VerticalContentAlignment="Center" Margin="5,0,10,0"/>
-                <Button x:Name="RightBrowse" Content="..." Grid.Column="2" Grid.Row="2" Margin="0,0,10,0" Click="RightBrowse_Click"/>
-            </Grid>
-            <Grid Margin="15,5,0,0" >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Filters:" Grid.Column="0" Margin="0,3,0,0" />
-                <ComboBox x:Name="Filters" Grid.Column="1" Height="23" VerticalContentAlignment="Center" Margin="10,0,10,0" IsEditable="True" />
-                <Button x:Name="Go" Content=" Go " Grid.Column="2" Margin="0,0,10,0" Click="Go_Click"/>
-            </Grid>
-            <Grid Margin="10,5,0,0" >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Button x:Name="CollapseAll" Content="Collapse all" Grid.Column="0" Margin="0,0,10,0" Click="CollapseAll_Click"/>
-                <ComboBox x:Name="HideFiles" SelectedIndex="1" Width="300" Grid.Column="2" Margin="0,0,10,0">
-                    <ComboBoxItem>Show all files</ComboBoxItem>
-                    <ComboBoxItem>Show files with any differences</ComboBoxItem>
-                    <ComboBoxItem>Show files differences outside of white space</ComboBoxItem>
-                </ComboBox>
-            </Grid>
-        </StackPanel>
-        <TreeView x:Name="Differences" HorizontalAlignment="Stretch" Margin="10,115,10,10" VerticalAlignment="Stretch"/>
+        <TextBlock Text="Left:"  Margin="10,13,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBox x:Name="Left" Height="23" TextWrapping="Wrap" HorizontalAlignment="Stretch"  VerticalAlignment="Top" VerticalContentAlignment="Top" Margin="45,10,30,0"/>
+        <Button x:Name="LeftBrowse" Content="..." HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0" Click="LeftBrowse_Click"/>
+
+        <TextBlock Text="Right:"  Margin="10,43,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBox x:Name="Right" Height="23" TextWrapping="Wrap" HorizontalAlignment="Stretch"  VerticalAlignment="Top" VerticalContentAlignment="Top" Margin="45,40,30,0"/>
+        <Button x:Name="RightBrowse" Content="..." HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,35,10,0" Click="RightBrowse_Click"/>
+
+        <Button x:Name="CollapseAll" Content=">" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,70,0,0" Click="CollapseAll_Click"/>
+        <Expander x:Name="Show" Margin="30,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Border BorderThickness="2" BorderBrush="Black" MouseLeave="Border_MouseLeave">
+                <StackPanel Background="White">
+                    <CheckBox Name="ShowIdentical" Content="Show Identical" IsChecked="False"/>
+                    <CheckBox Name="ShowLeftOnly" Content="Show left only files" IsChecked="True"/>
+                    <CheckBox Name="ShowRightOnly" Content="Show right only file" IsChecked="True"/>
+                    <CheckBox Name="ShowDifferentInWhiteSpaceOnly" Content="Show different only in white space" IsChecked="True"/>
+                    <CheckBox Name="ShowDifferentExcludingWhiteSpace" Content="Show different outside of whitespace" IsChecked="True"/>
+                </StackPanel>
+            </Border>
+        </Expander>
+
+        <TextBlock Text="Filters:"  Margin="60,73,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <ComboBox x:Name="Filters" Height="23" HorizontalAlignment="Stretch" VerticalAlignment="Top" VerticalContentAlignment="Center" Margin="100,70,45,0" IsEditable="True" />
+
+        <Button x:Name="Go" Content=" Go " HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,70,10,0" Click="Go_Click"/>
     </Grid>
 </UserControl>

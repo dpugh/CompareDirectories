@@ -11,6 +11,7 @@ namespace CompareDirectories
     using Microsoft.VisualStudio.Shell.Interop;
     using Microsoft.VisualStudio.Threading;
     using System;
+    using System.Linq;
     using System.Collections.Generic;
     using System.IO;
     using System.Runtime.InteropServices;
@@ -33,8 +34,19 @@ namespace CompareDirectories
             this.Filters.ItemsSource = CompareDirectoriesPackage.CommonFilters;
             this.Filters.Text = CompareDirectoriesPackage.CommonFilters[0];
 
-            this.HideFiles.SelectionChanged += HideFiles_SelectionChanged;
             this.Differences.PreviewMouseLeftButtonDown += Differences_PreviewMouseLeftButtonDown;
+
+            // Has to happen after InitializeComponents since the Checked/Unchecked event fires if we do it in the xaml.
+            this.ShowIdentical.Checked += this.Show_Checked;
+            this.ShowIdentical.Unchecked += this.Show_Checked;
+            this.ShowLeftOnly.Checked += this.Show_Checked;
+            this.ShowLeftOnly.Unchecked += this.Show_Checked;
+            this.ShowRightOnly.Checked += this.Show_Checked;
+            this.ShowRightOnly.Unchecked += this.Show_Checked;
+            this.ShowDifferentInWhiteSpaceOnly.Checked += this.Show_Checked;
+            this.ShowDifferentInWhiteSpaceOnly.Unchecked += this.Show_Checked;
+            this.ShowDifferentExcludingWhiteSpace.Checked += this.Show_Checked;
+            this.ShowDifferentExcludingWhiteSpace.Unchecked += this.Show_Checked;
         }
 
         private void Differences_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -107,12 +119,14 @@ namespace CompareDirectories
 
         private void CollapseAll_Click(object sender, RoutedEventArgs e)
         {
-            CollapseTree(this.Differences.Items);
+            bool any = CollapseTree(this.Differences.Items, isExpanded: false);
+            if (!any)
+                CollapseTree(this.Differences.Items, isExpanded: true);
         }
 
-        private void HideFiles_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Show_Checked(object sender, RoutedEventArgs e)
         {
-            this.UpdateVisibilities(this.Differences.Items, (FileDifference)(this.HideFiles.SelectedIndex));
+            this.UpdateVisibilities(this.Differences.Items, this.GetFilterMask());
         }
 
         private void Go_Click(object sender, RoutedEventArgs e)
@@ -143,7 +157,22 @@ namespace CompareDirectories
             this.UpdateState();
         }
 
-        private void UpdateVisibilities(ItemCollection items, FileDifference threshold)
+        private void Border_MouseLeave(object sender, MouseEventArgs e)
+        {
+            this.Show.IsExpanded = false;
+        }
+
+        private void Differences_CleanUpVirtualizedItem(object sender, CleanUpVirtualizedItemEventArgs e)
+        {
+
+        }
+
+        private bool IsCurrent(ExtendedState state)
+        {
+            return (_state == state.State);
+        }
+
+        private void UpdateVisibilities(ItemCollection items, FileDifference filterMask)
         {
             foreach (var i in items)
             {
@@ -152,12 +181,20 @@ namespace CompareDirectories
                 {
                     var node = item.Tag as TreeNode;
 
-                    node.SetVisibility(item, threshold);
-                    this.UpdateVisibilities(item.Items, threshold);
+                    node?.SetVisibility(item, filterMask);
+                    this.UpdateVisibilities(item.Items, filterMask);
                 }
             }
         }
 
+        private FileDifference GetFilterMask()
+        {
+            return ((this.ShowIdentical.IsChecked ?? false) ? FileDifference.Identical : FileDifference.None) |
+                   ((this.ShowLeftOnly.IsChecked ?? false) ? FileDifference.LeftOnly : FileDifference.None) |
+                   ((this.ShowRightOnly.IsChecked ?? false) ? FileDifference.RightOnly : FileDifference.None) |
+                   ((this.ShowDifferentInWhiteSpaceOnly.IsChecked ?? false) ? FileDifference.DifferentInWhiteSpaceOnly : FileDifference.None) |
+                   ((this.ShowDifferentExcludingWhiteSpace.IsChecked ?? false) ? FileDifference.DifferentExcludingWhiteSpace : FileDifference.None);
+        }
 
         private static TreeViewItem GetClickedItem(MouseButtonEventArgs e)
         {
@@ -174,19 +211,23 @@ namespace CompareDirectories
             return null;
         }
 
-        static readonly Brush _badPathBrush = new SolidColorBrush(Color.FromArgb(255, 255, 240, 240));
-
-        private static void CollapseTree(ItemCollection items)
+        private static bool CollapseTree(ItemCollection items, bool isExpanded)
         {
+            bool differences = false;
             foreach (var i in items)
             {
                 var tvi = i as TreeViewItem;
                 if (tvi != null)
                 {
-                    tvi.IsExpanded = false;
-                    CollapseTree(tvi.Items);
+                    differences = differences || (tvi.IsExpanded != isExpanded);
+
+                    tvi.IsExpanded = isExpanded;
+                    if (CollapseTree(tvi.Items, isExpanded))
+                        differences = true;
                 }
             }
+
+            return differences;
         }
 
         private string GetFolder(string title, string starting)
@@ -252,11 +293,11 @@ namespace CompareDirectories
 
         private async Task CalculateDiffs()
         {
-            var oldState = Volatile.Read(ref _state);
+            var oldState = new ExtendedState(Volatile.Read(ref _state));
             while (true)
             {
-                await this.PostResults(null);
-                TreeNode root = new TreeNode(null, null, null, string.Empty, FileDifference.DifferentExcludingWhiteSpace);
+                await this.PostResults(null, "... <working> ...");
+                TreeNode root = new TreeNode(null, null, null, string.Empty, FileDifference.All);
 
                 if (oldState.LeftDirectoryExists && oldState.RightDirectoryExists)
                 {
@@ -265,11 +306,14 @@ namespace CompareDirectories
                     var leftFiles = new List<PathData>(EnumerateFiles(oldState, oldState.LeftPath, oldState.LeftPath));
                     var rightFiles = new List<PathData>(EnumerateFiles(oldState, oldState.RightPath, oldState.RightPath));
 
+                    var allRightFiles = new HashSet<string>(rightFiles.Select(p => p.RelativePath), StringComparer.OrdinalIgnoreCase);
+
+                    int count = 0;
                     int leftIndex = 0;
                     int rightIndex = 0;
-                    while (((leftIndex < leftFiles.Count) || (rightIndex < rightFiles.Count)) && (_state == oldState))
+                    while (((leftIndex < leftFiles.Count) || (rightIndex < rightFiles.Count)) && this.IsCurrent(oldState))
                     {
-                        if (oldState != _state)
+                        if (!this.IsCurrent(oldState))
                             break;
 
                         var leftFile = (leftIndex < leftFiles.Count) ? leftFiles[leftIndex] : _empty;
@@ -284,17 +328,22 @@ namespace CompareDirectories
                             ++leftIndex;
                             ++rightIndex;
                         }
-                        else if ((leftIndex >= leftFiles.Count) || ContainsAfterIndex(leftFile.RelativePath, rightFiles, rightIndex + 1))
+                        else if ((leftIndex >= leftFiles.Count) || allRightFiles.Contains(leftFile.RelativePath))
                         {
                             root.AddToTree(null, rightFiles[rightIndex].FullPath, rightFile.RelativePath + " (right only)",
-                                           FileDifference.DifferentExcludingWhiteSpace, splitlabel: true);
+                                           FileDifference.RightOnly, splitlabel: true);
                             ++rightIndex;
                         }
                         else
                         {
                             root.AddToTree(leftFiles[leftIndex].FullPath, null, leftFile.RelativePath + " (left only)",
-                                           FileDifference.DifferentExcludingWhiteSpace, splitlabel: true);
+                                           FileDifference.LeftOnly, splitlabel: true);
                             ++leftIndex;
+                        }
+
+                        if ((++count) % 100 == 0)
+                        {
+                            await this.PostResults(null, "... <working> (" + ((100 * (leftIndex + rightIndex)) / (leftFiles.Count + rightFiles.Count)).ToString() + "%) ...");
                         }
                     }
                 }
@@ -315,15 +364,15 @@ namespace CompareDirectories
                                    FileDifference.DifferentExcludingWhiteSpace, splitlabel: false);
                 }
 
-                await this.PostResults(root);
+                await this.PostResults(root, oldState.LeftPath + " .vs. " + oldState.RightPath);
 
-                var result = Interlocked.CompareExchange(ref _state, null, oldState);
-                if (result == oldState)
+                var result = Interlocked.CompareExchange(ref _state, null, oldState.State);
+                if (result == oldState.State)
                 {
                     break;
                 }
 
-                oldState = result;
+                oldState = new ExtendedState(result);
             }
         }
 
@@ -344,18 +393,7 @@ namespace CompareDirectories
             return relativeFilePaths;
         }
 
-        private static bool ContainsAfterIndex(string text, IList<PathData> items, int start)
-        {
-            for (int i = start; (i < items.Count); ++i)
-            {
-                if (StringComparer.OrdinalIgnoreCase.Equals(text, items[i].RelativePath))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private FileDifference CompareFiles(State oldState, string left, string right)
+        private FileDifference CompareFiles(ExtendedState oldState, string left, string right)
         {
             try
             {
@@ -371,7 +409,7 @@ namespace CompareDirectories
                         int r = -1;
                         while (true)
                         {
-                            if (oldState != _state)
+                            if (!this.IsCurrent(oldState))
                                 return FileDifference.Identical;
 
                             if (skipRead)
@@ -470,55 +508,55 @@ namespace CompareDirectories
             }
         }
 
-        private async Task PostResults(TreeNode root)
+        private async Task PostResults(TreeNode root, string label)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             this.Differences.Items.Clear();
 
-            if ((root == null) || (root.Children == null))
+            var tvi = new TreeViewItem();
+            tvi.Header = label;
+            tvi.IsExpanded = true;
+            this.Differences.Items.Add(tvi);
+
+
+            if (root != null)
             {
-                var tvi = new TreeViewItem();
-                tvi.Header = (root == null) ? "... <working> ..." : "No differences";
-                tvi.IsExpanded = true;
-                this.Differences.Items.Add(tvi);
-            }
-            else
-            {
+                var filterMask = this.GetFilterMask();
                 foreach (var c in root.Children)
                 {
-                    c.AddToTreeView(this.Differences.Items, (FileDifference)(this.HideFiles.SelectedIndex));
+                    c.AddToTreeView(tvi.Items, filterMask);
                 }
             }
 
             await TaskScheduler.Default;
         }
 
-        private IEnumerable<PathData> EnumerateFiles(State oldState, string rootDirectory, string directory)
+        private IEnumerable<PathData> EnumerateFiles(ExtendedState oldState, string rootDirectory, string directory)
         {
-            if (_state == oldState)
+            if (Directory.Exists(directory))
             {
-                if (Directory.Exists(directory))
+                foreach (var d in Directory.EnumerateDirectories(directory))
                 {
-                    foreach (var d in Directory.EnumerateDirectories(directory))
+                    if (!this.IsCurrent(oldState))
+                        break;
+
+                    foreach (var e in this.EnumerateFiles(oldState, rootDirectory, d))
                     {
-                        foreach (var e in this.EnumerateFiles(oldState, rootDirectory, d))
-                        {
-                            yield return e;
-                        }
+                        yield return e;
                     }
+                }
 
-                    foreach (var f in Directory.EnumerateFiles(directory))
+                foreach (var f in Directory.EnumerateFiles(directory))
+                {
+                    if (!this.IsCurrent(oldState))
+                        break;
+
+                    var path = new PathData(rootDirectory, f);
+
+                    if (oldState.PassesFilters(path.RelativePath))
                     {
-                        if (_state != oldState)
-                            break;
-
-                        var path = new PathData(rootDirectory, f);
-
-                        if (oldState.PassesFilters(path.RelativePath))
-                        {
-                            yield return path;
-                        }
+                        yield return path;
                     }
                 }
             }

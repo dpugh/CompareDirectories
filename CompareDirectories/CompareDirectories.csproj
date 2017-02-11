@@ -51,12 +51,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CompareDirectories.cs" />
+    <Compile Include="CompareDirectoriesToolWindow.cs" />
     <Compile Include="CompareDirectoriesCommand.cs" />
     <Compile Include="CompareDirectoriesControl.xaml.cs">
       <DependentUpon>CompareDirectoriesControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="CompareDirectoriesPackage.cs" />
+    <Compile Include="ExtendedState.cs" />
     <Compile Include="FileDifference.cs" />
     <Compile Include="PathData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
