@@ -34,7 +34,7 @@ namespace CompareDirectories
             this.FileDifference = difference;
         }
 
-        internal void AddToTree(string leftPath, string rightPath, string label, 
+        internal void AddToTree(string leftPath, string rightPath, string label,
                                 FileDifference differences, bool splitlabel)
         {
             var labelElements = splitlabel ? label.Split(Path.DirectorySeparatorChar) : new string[] { label };
@@ -55,8 +55,8 @@ namespace CompareDirectories
                     if (child == null)
                     {
                         child = (i < labelElements.Length - 1)
-                                ? new TreeNode(parent, null, null, element, FileDifference.Identical)
-                                : new TreeNode(parent, leftPath, rightPath, element, FileDifference.Identical);
+                                ? new TreeNode(parent, null, null, element, FileDifference.None)
+                                : new TreeNode(parent, leftPath, rightPath, element, FileDifference.None);
 
                         parent.Children.Add(child);
                     }
@@ -67,46 +67,58 @@ namespace CompareDirectories
 
             do
             {
-                if ((int)differences <= (int)(parent.FileDifference))
+                var newDifferences = differences | parent.FileDifference;
+                if (parent.FileDifference == newDifferences)
                     break;
 
-                parent.FileDifference = differences;
+                parent.FileDifference = newDifferences;
                 parent = parent.Parent;
             }
             while (parent != null);
         }
 
-        internal void AddToTreeView(ItemCollection items, FileDifference threshold)
+        static Brush GetBrush(FileDifference difference)
+        {
+            return difference.HasFlag(FileDifference.DifferentExcludingWhiteSpace)
+                   ? Brushes.Red
+                   : (difference.HasFlag(FileDifference.DifferentInWhiteSpaceOnly)
+                      ? Brushes.Blue
+                      : (difference.HasFlag(FileDifference.LeftOnly) || difference.HasFlag(FileDifference.RightOnly)
+                        ? Brushes.Green
+                        : Brushes.Black));
+        }
+
+        internal void AddToTreeView(ItemCollection items, FileDifference filterMask)
         {
             var tvi = new TreeViewItem();
             tvi.Tag = this;
 
             var box = new TextBox();
             box.Text = this.Label;
-            box.Foreground = (this.FileDifference == FileDifference.DifferentExcludingWhiteSpace)
-                             ? Brushes.Red : ((this.FileDifference == FileDifference.DifferentInWhiteSpaceOnly) ? Brushes.Blue : Brushes.Black);
+            box.Foreground = GetBrush(this.FileDifference);
 
             tvi.Header = box;
 
             tvi.IsExpanded = true;
 
-            SetVisibility(tvi, threshold);
+            SetVisibility(tvi, filterMask);
 
 
             if (this.Children != null)
             {
                 foreach (var c in this.Children)
                 {
-                    c.AddToTreeView(tvi.Items, threshold);
+                    c.AddToTreeView(tvi.Items, filterMask);
                 }
             }
 
             items.Add(tvi);
         }
 
-        internal void SetVisibility(TreeViewItem item, FileDifference threshold)
+        internal void SetVisibility(TreeViewItem item, FileDifference filterMask)
         {
-            item.Visibility = (((int)(this.FileDifference)) < (int)threshold) ? Visibility.Collapsed : Visibility.Visible;
+            item.Visibility = ((this.FileDifference & filterMask) == FileDifference.None)
+                              ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 }

@@ -1,15 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿//------------------------------------------------------------------------------
+// <copyright file="CompareDirectoriesCommand.cs" company="Microsoft Corp.">
+//     Copyright (c) Microsoft Corp..  All rights reserved.
+// </copyright>
+//------------------------------------------------------------------------------
 
 namespace CompareDirectories
 {
-    enum FileDifference
+    using System;
+
+    [Flags]
+    internal enum FileDifference
     {
-        Identical = 0,
-        DifferentInWhiteSpaceOnly = 1,
-        DifferentExcludingWhiteSpace = 2
+        None = 0,
+        Identical = 1,
+        LeftOnly = 2,
+        RightOnly = 4,
+        DifferentInWhiteSpaceOnly = 8,
+        DifferentExcludingWhiteSpace = 16,
+        All = 31
     }
 }
