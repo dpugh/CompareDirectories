@@ -101,12 +101,12 @@ namespace CompareDirectories
 
             if (CommonFilters.Count == 0)
             {
+                CommonFilters.Add("-*.dll;-*.pdb;-*.obj;-*.exe;-*.vsix;-.vs\\*;-*obj\\*;-*bin\\*;-.git\\*;-packages\\*");
                 CommonFilters.Add("*.cs;*.vb;*.c;*.cpp;*.h");
                 CommonFilters.Add(string.Empty);
             }
-
-            #endregion
         }
+        #endregion
 
         protected override void Dispose(bool disposing)
         {

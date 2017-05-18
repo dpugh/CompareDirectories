@@ -18,8 +18,8 @@ namespace CompareDirectories
     {
         public readonly string LeftPath;
         public readonly string RightPath;
-        public readonly string Label;
-        public readonly TreeNode Parent;
+        public string Label { get; private set; }
+        public TreeNode Parent { get; private set; }
         public FileDifference FileDifference;
 
         public List<TreeNode> Children { get; private set; }
@@ -90,8 +90,27 @@ namespace CompareDirectories
 
         internal void AddToTreeView(ItemCollection items, FileDifference filterMask)
         {
+            while ((this.Children != null) && (this.Children.Count == 1))
+            {
+                var child = this.Children[0];
+                if ((child.LeftPath != null) || (child.RightPath != null) || (child.Children == null))
+                {
+                    break;
+                }
+
+                this.Children.RemoveAt(0);
+                this.Children.AddRange(child.Children);
+                foreach (var c in child.Children)
+                {
+                    c.Parent = this;
+                }
+
+                this.Label = this.Label + "/" + child.Label;
+            }
+
             var tvi = new TreeViewItem();
             tvi.Tag = this;
+
 
             var box = new TextBox();
             box.Text = this.Label;
@@ -102,7 +121,6 @@ namespace CompareDirectories
             tvi.IsExpanded = true;
 
             SetVisibility(tvi, filterMask);
-
 
             if (this.Children != null)
             {

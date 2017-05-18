@@ -26,8 +26,8 @@
         <TextBox x:Name="Right" Height="23" TextWrapping="Wrap" HorizontalAlignment="Stretch"  VerticalAlignment="Top" VerticalContentAlignment="Top" Margin="45,40,30,0"/>
         <Button x:Name="RightBrowse" Content="..." HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,35,10,0" Click="RightBrowse_Click"/>
 
-        <Button x:Name="CollapseAll" Content=">" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,70,0,0" Click="CollapseAll_Click"/>
-        <Expander x:Name="Show" Margin="30,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Button x:Name="CollapseAll" Content=">" ToolTip="Collapse/Expand" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,70,0,0" Click="CollapseAll_Click"/>
+        <Expander x:Name="Show" ToolTip="Show/Hide" Margin="30,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
             <Border BorderThickness="2" BorderBrush="Black" MouseLeave="Border_MouseLeave">
                 <StackPanel Background="White">
                     <CheckBox Name="ShowIdentical" Content="Show Identical" IsChecked="False"/>

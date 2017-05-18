@@ -7,13 +7,16 @@
 namespace CompareDirectories
 {
     using Microsoft.VisualStudio;
+    using Microsoft.VisualStudio.ComponentModelHost;
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
+    using Microsoft.VisualStudio.Text.Differencing;
+    using Microsoft.VisualStudio.Text.Editor;
     using Microsoft.VisualStudio.Threading;
     using System;
-    using System.Linq;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
@@ -64,6 +67,10 @@ namespace CompareDirectories
                         var diff = CompareDirectoriesPackage.GetGlobalService(typeof(SVsDifferenceService)) as IVsDifferenceService;
                         if (diff != null)
                         {
+                            var componentModel = (IComponentModel)CompareDirectoriesPackage.GetGlobalService(typeof(SComponentModel));
+                            var factory = componentModel.GetService<IEditorOptionsFactoryService>();
+                            factory.GlobalOptions.SetOptionValue(DifferenceViewerOptions.HighlightModeId, (DifferenceHighlightMode)(DifferenceHighlightMode2.BlockOutline));
+
                             using (new NewDocumentStateScope(__VSNEWDOCUMENTSTATE.NDS_Provisional, CompareDirectoriesPackage.PackageGuid))
                             {
                                 diff.OpenComparisonWindow(node.LeftPath, node.RightPath);
